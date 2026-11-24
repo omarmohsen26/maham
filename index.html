@@ -6,8 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" id="meta-theme" content="#F2F2F7">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -22,13 +21,20 @@
   --shadow:0 1px 3px rgba(0,0,0,.06);
 }
 @media (prefers-color-scheme: dark){
-  :root{
+  :root:not([data-theme="light"]){
     --bg:#000000; --card:#1C1C1E; --card2:#2C2C2E; --sep:rgba(84,84,88,.4);
     --text:#FFFFFF; --text2:#EBEBF5; --muted:#8E8E93; --fill:rgba(120,120,128,.24);
     --blue:#0A84FF; --green:#30D158; --red:#FF453A; --orange:#FF9F0A; --purple:#BF5AF2;
     --navbar:rgba(22,22,23,.78); --tabbar:rgba(22,22,23,.82); --sheet:#1C1C1E;
     --shadow:0 1px 3px rgba(0,0,0,.4);
   }
+}
+:root[data-theme="dark"]{
+  --bg:#000000; --card:#1C1C1E; --card2:#2C2C2E; --sep:rgba(84,84,88,.4);
+  --text:#FFFFFF; --text2:#EBEBF5; --muted:#8E8E93; --fill:rgba(120,120,128,.24);
+  --blue:#0A84FF; --green:#30D158; --red:#FF453A; --orange:#FF9F0A; --purple:#BF5AF2;
+  --navbar:rgba(22,22,23,.78); --tabbar:rgba(22,22,23,.82); --sheet:#1C1C1E;
+  --shadow:0 1px 3px rgba(0,0,0,.4);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{height:100%}
@@ -69,7 +75,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .add-top:active{transform:scale(.88)}
 .add-top svg{width:16px;height:16px;stroke:#fff;stroke-width:3;fill:none;stroke-linecap:round}
 .largetitle{padding:14px 16px 6px;max-width:600px;margin:0 auto}
-.largetitle h1{font-size:32px;font-weight:700;letter-spacing:-.4px}
+.largetitle h1{font-size:34px;font-weight:800;letter-spacing:-.5px}
 .largetitle .date{color:var(--muted);font-size:15px;margin-top:3px}
 
 /* ===== Shift widget ===== */
@@ -102,7 +108,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .gh .gdot{width:9px;height:9px;border-radius:50%}
 .gh span{font-size:13px;font-weight:600;color:var(--muted)}
 .gh small{color:var(--muted);font-size:12px;margin-inline-start:auto;font-variant-numeric:tabular-nums}
-.gcard{background:var(--card);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+.gcard{background:var(--card);border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
 .task{transition:opacity .25s}
 .task + .task .row{border-top:.5px solid var(--sep)}
 .task.done .ttl{color:var(--muted);text-decoration:line-through}
@@ -142,7 +148,7 @@ textarea.in{resize:vertical}
 @keyframes sh{to{background-position:-200% 0}}
 
 /* ===== Shifts list ===== */
-.shcard{background:var(--card);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);margin-top:12px}
+.shcard{background:var(--card);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);margin-top:12px}
 .sh{display:flex;align-items:center;gap:12px;padding:12px 14px;transition:opacity .2s}
 .sh + .sh{border-top:.5px solid var(--sep)}
 .sh.past{opacity:.42}
@@ -190,6 +196,45 @@ textarea.in{resize:vertical}
   color:var(--text);padding:12px 18px;border-radius:16px;font-weight:500;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.18);
   transition:transform .45s cubic-bezier(.32,.72,0,1);max-width:88%;text-align:center;border:.5px solid var(--sep)}
 .toast.on{transform:translate(-50%,0)}
+
+/* ===== Premium polish: press feedback, motion, refinement ===== */
+.row{transition:background .15s}
+.row:active{background:var(--card2)}
+.check{transition:all .2s,transform .15s}
+.check:active{transform:scale(.82)}
+.tab svg{transition:transform .18s cubic-bezier(.32,.72,0,1)}
+.tab:active svg{transform:scale(.85)}
+.srow.sbtn{transition:background .15s}
+.srow.sbtn:active{background:var(--card2)}
+.swatch{box-shadow:inset 0 0 0 .5px rgba(0,0,0,.08)}
+#p-tasks,#p-shifts,#p-settings{animation:fadeUp .32s cubic-bezier(.32,.72,0,1)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.shift{transition:transform .2s cubic-bezier(.32,.72,0,1)}
+.shift:active{transform:scale(.985)}
+.s-emo{animation:float 4.5s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.prog,.gcard,.shcard,.shift{will-change:transform}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+/* ===== Settings (iOS grouped) ===== */
+.srow{display:flex;align-items:center;gap:12px;padding:11px 14px;font-size:16px;width:100%;text-align:start}
+.srow + .srow{border-top:.5px solid var(--sep)}
+.sl{flex:1}
+.sinput{width:150px;margin:0;padding:7px 10px;font-size:15px}
+.ssel{width:auto;min-width:130px;margin:0;padding:8px 12px;font-size:15px}
+.seg{display:flex;background:var(--fill);border-radius:9px;padding:2px;margin-bottom:14px}
+.seg button{flex:1;padding:7px;border-radius:7px;font-size:14px;font-weight:500;color:var(--text2);transition:background .15s}
+.seg button.on{background:var(--card);box-shadow:0 1px 4px rgba(0,0,0,.14);font-weight:600;color:var(--text)}
+.swatches{display:flex;gap:10px;justify-content:space-between}
+.swatch{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:transform .15s}
+.swatch:active{transform:scale(.88)}
+.swatch.on::after{content:"";width:11px;height:11px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.35)}
+.sw{width:51px;height:31px;border-radius:999px;background:var(--fill);position:relative;transition:background .2s;flex-shrink:0}
+.sw::after{content:"";position:absolute;top:2px;inset-inline-start:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.25);transition:transform .22s cubic-bezier(.32,.72,0,1)}
+.sw.on{background:var(--green)}
+.sw.on::after{transform:translateX(-20px)}
+.sbtn{cursor:pointer}
+.sfoot{text-align:center;color:var(--muted);font-size:13px;line-height:1.9;padding:28px 16px 8px}
 </style>
 </head>
 <body>
@@ -224,6 +269,56 @@ textarea.in{resize:vertical}
   <div id="p-shifts" class="hide">
     <div class="shcard" id="shifts"></div>
   </div>
+
+  <div id="p-settings" class="hide">
+    <div class="group">
+      <div class="gh"><span>المظهر</span></div>
+      <div class="gcard" style="padding:14px">
+        <div class="seg" id="seg-theme">
+          <button data-v="auto">تلقائي</button><button data-v="light">فاتح</button><button data-v="dark">داكن</button>
+        </div>
+        <div class="swatches" id="sw-accent">
+          <button class="swatch" data-c="#0A84FF" style="background:#0A84FF" aria-label="أزرق"></button>
+          <button class="swatch" data-c="#30D158" style="background:#30D158" aria-label="أخضر"></button>
+          <button class="swatch" data-c="#FF9F0A" style="background:#FF9F0A" aria-label="برتقالي"></button>
+          <button class="swatch" data-c="#BF5AF2" style="background:#BF5AF2" aria-label="بنفسجي"></button>
+          <button class="swatch" data-c="#FF375F" style="background:#FF375F" aria-label="وردي"></button>
+          <button class="swatch" data-c="#64D2FF" style="background:#64D2FF" aria-label="سماوي"></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="gh"><span>التخصيص</span></div>
+      <div class="gcard">
+        <div class="srow"><span class="sl">الاسم في التحية</span><input class="in sinput" id="set-name" placeholder="كابتن" maxlength="20"></div>
+        <div class="srow"><span class="sl">بطاقة وردية اليوم</span><button class="sw" id="set-shiftcard" aria-label="بطاقة وردية اليوم"></button></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="gh"><span>المهام</span></div>
+      <div class="gcard">
+        <div class="srow"><span class="sl">التصنيف الافتراضي</span><select class="in ssel" id="set-defcat"></select></div>
+        <div class="srow"><span class="sl">ترتيب المهام</span><select class="in ssel" id="set-sort">
+          <option value="sheet">كما هي في الشيت</option>
+          <option value="date">حسب التاريخ</option>
+          <option value="prio">حسب الأولوية</option>
+        </select></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="gh"><span>الحساب والبيانات</span></div>
+      <div class="gcard">
+        <button class="srow sbtn" id="set-refresh"><span class="sl" style="color:var(--blue)">تحديث البيانات الآن</span></button>
+        <button class="srow sbtn" id="set-clear"><span class="sl" style="color:var(--red)">مسح البيانات المحلية</span></button>
+        <button class="srow sbtn" id="set-signout"><span class="sl" style="color:var(--red)">تسجيل الخروج</span></button>
+      </div>
+    </div>
+
+    <div class="sfoot">بياناتك محفوظة في Google Sheet الخاص بك بس.<br>الإعدادات دي محفوظة على جهازك بس.</div>
+  </div>
 </div>
 
 <nav class="tabs">
@@ -234,6 +329,10 @@ textarea.in{resize:vertical}
   <button class="tab" data-tab="shifts">
     <svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="16" rx="3"/><path d="M3.5 9.5h17M8 3v3.5M16 3v3.5"/></svg>
     <span>الورديات</span>
+  </button>
+  <button class="tab" data-tab="settings">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.01a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.01a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z"/></svg>
+    <span>الإعدادات</span>
   </button>
 </nav>
 
@@ -289,6 +388,35 @@ const opts = (list, val) => list.map(x => `<option ${x === val ? 'selected' : ''
 const arNum = n => Number(n).toLocaleString('ar-EG');
 
 let S = { tasks: [], shifts: [], tab: 'tasks', open: null, loading: true };
+
+// --- On-device settings (localStorage only, never sent anywhere) ---
+const CFG_KEY = 'engaz-settings';
+const CFG_DEF = { theme: 'auto', accent: '#0A84FF', name: '', shiftCard: true, defCat: 'شخصي', sort: 'sheet' };
+let CFG = (() => { try { return { ...CFG_DEF, ...(JSON.parse(localStorage.getItem(CFG_KEY)) || {}) }; } catch (e) { return { ...CFG_DEF }; } })();
+function saveCfg() { try { localStorage.setItem(CFG_KEY, JSON.stringify(CFG)); } catch (e) {} }
+const mqDark = matchMedia('(prefers-color-scheme: dark)');
+function applyCfg() {
+  const r = document.documentElement;
+  if (CFG.theme === 'auto') delete r.dataset.theme; else r.dataset.theme = CFG.theme;
+  r.style.setProperty('--blue', CFG.accent);
+  const dark = CFG.theme === 'dark' || (CFG.theme !== 'light' && mqDark.matches);
+  const m = document.getElementById('meta-theme');
+  if (m) m.content = dark ? '#000000' : '#F2F2F7';
+}
+mqDark.addEventListener('change', () => { if (CFG.theme === 'auto') applyCfg(); });
+function sortItems(items) {
+  if (CFG.sort === 'date') return [...items].sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999') || a.row - b.row);
+  if (CFG.sort === 'prio') { const o = { 'عالية': 0, 'وسط': 1, 'قليلة': 2 }; return [...items].sort((a, b) => (o[a.prio] ?? 1) - (o[b.prio] ?? 1) || a.row - b.row); }
+  return items;
+}
+function syncSettingsUI() {
+  document.querySelectorAll('#seg-theme button').forEach(b => b.classList.toggle('on', b.dataset.v === CFG.theme));
+  document.querySelectorAll('#sw-accent .swatch').forEach(b => b.classList.toggle('on', b.dataset.c === CFG.accent));
+  if (document.activeElement !== $('#set-name')) $('#set-name').value = CFG.name;
+  $('#set-shiftcard').classList.toggle('on', !!CFG.shiftCard);
+  $('#set-defcat').innerHTML = opts(CATS, CFG.defCat);
+  $('#set-sort').value = CFG.sort;
+}
 
 // --- Google Sign-In + Sheets REST: no proxy, no secrets in code ---
 const CLIENT_ID = '444419713508-pn30ub5vjiomcqt6cstl4fect0bsj1br.apps.googleusercontent.com';
@@ -404,11 +532,14 @@ function renderAll() { renderHeader(); renderProgress(); renderTasks(); renderSh
 
 function renderHeader() {
   const h = now.getHours();
-  $('#greet').textContent = (h >= 5 && h < 12) ? 'صباح الخير يا كابتن' : (h >= 12 && h < 17) ? 'نهارك سعيد يا كابتن' : 'مساء الخير يا كابتن';
+  const who = (CFG.name || '').trim() || 'كابتن';
+  const word = (h >= 5 && h < 12) ? 'صباح الخير' : (h >= 12 && h < 17) ? 'نهارك سعيد' : 'مساء الخير';
+  $('#greet').textContent = word + ' يا ' + who;
   $('#date').textContent = now.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' });
 
   const s = S.shifts.find(x => x[0] === (S.today || TODAY));
   const card = $('#shift');
+  card.style.display = CFG.shiftCard ? '' : 'none';
   if (!s) {
     card.innerHTML = `<div class="shift-in"><div class="s-emo">🌙</div><div><div class="s-name">لا توجد وردية اليوم</div><div class="s-time">استرح يا كابتن</div></div></div>`;
     return;
@@ -473,7 +604,7 @@ function renderTasks() {
   if (!S.tasks.length) { L.innerHTML = '<div class="empty"><span class="big">✨</span>لا توجد مهام بعد<br>اضغط + لإضافة أول مهمة</div>'; return; }
   const cats = [...new Set([...CATS, ...S.tasks.map(t => t.cat)])].filter(Boolean);
   L.innerHTML = cats.map(c => {
-    const items = S.tasks.filter(t => t.cat === c);
+    const items = sortItems(S.tasks.filter(t => t.cat === c));
     if (!items.length) return '';
     const dn = items.filter(t => t.done).length;
     return `<section class="group">
@@ -584,7 +715,7 @@ function openSheet() {
   $('#n-title').value = '';
   $('#n-date').value = '';
   $('#n-notes').value = '';
-  $('#n-cat').value = 'شخصي';
+  $('#n-cat').value = CFG.defCat || 'شخصي';
   $('#n-prio').value = 'وسط';
   $('#ov').classList.add('on');
   $('#sheet').classList.add('on');
@@ -628,8 +759,39 @@ document.querySelectorAll('.tab').forEach(b => {
     document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b));
     $('#p-tasks').classList.toggle('hide', S.tab !== 'tasks');
     $('#p-shifts').classList.toggle('hide', S.tab !== 'shifts');
+    $('#p-settings').classList.toggle('hide', S.tab !== 'settings');
     $('#fab').classList.toggle('hide', S.tab !== 'tasks');
+    if (S.tab === 'settings') syncSettingsUI();
   });
+});
+
+$('#seg-theme').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  CFG.theme = b.dataset.v; saveCfg(); applyCfg(); syncSettingsUI();
+});
+$('#sw-accent').addEventListener('click', e => {
+  const b = e.target.closest('.swatch'); if (!b) return;
+  CFG.accent = b.dataset.c; saveCfg(); applyCfg(); syncSettingsUI();
+});
+$('#set-name').addEventListener('input', e => { CFG.name = e.target.value; saveCfg(); renderHeader(); });
+$('#set-shiftcard').addEventListener('click', e => { CFG.shiftCard = !CFG.shiftCard; saveCfg(); e.currentTarget.classList.toggle('on', CFG.shiftCard); renderHeader(); });
+$('#set-defcat').addEventListener('change', e => { CFG.defCat = e.target.value; saveCfg(); });
+$('#set-sort').addEventListener('change', e => { CFG.sort = e.target.value; saveCfg(); renderTasks(); });
+$('#set-refresh').addEventListener('click', async () => {
+  if (!gToken) { showAuth(); return; }
+  S.loading = true; renderAll(); await refresh(); toast('تم التحديث');
+});
+$('#set-clear').addEventListener('click', () => {
+  localStorage.removeItem('engaz-cache');
+  toast('تم مسح البيانات المحلية');
+  if (gToken) refresh();
+});
+$('#set-signout').addEventListener('click', async () => {
+  try { if (gToken && window.google && google.accounts) google.accounts.oauth2.revoke(gToken, () => {}); } catch (e) {}
+  gToken = null;
+  try { localStorage.removeItem('engaz-signed'); } catch (e) {}
+  hideReauth(); showAuth();
+  toast('تم تسجيل الخروج');
 });
 
 $('#signin-btn').addEventListener('click', async e => {
@@ -651,6 +813,8 @@ $('#reauth-btn').addEventListener('click', async e => {
 
 $('#n-cat').innerHTML = opts(CATS, 'شخصي');
 $('#n-prio').innerHTML = opts(PRIOS, 'وسط');
+applyCfg();
+syncSettingsUI();
 const hadCache = loadCache();
 S.loading = !hadCache;
 renderAll();

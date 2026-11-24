@@ -1,4 +1,4 @@
-const CACHE = 'injaz-v4';
+const CACHE = 'injaz-v5';
 const ASSETS = ['./icon-192.png', './icon-512.png', './apple-touch-icon.png', './favicon-32.png'];
 
 self.addEventListener('install', e => {
