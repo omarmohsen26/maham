@@ -12,7 +12,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<title>مهام عمر</title>
+<title>Injaz</title>
 <style>
 :root{
   --bg:#F2F2F7; --card:#FFFFFF; --card2:#F2F2F7; --sep:rgba(60,60,67,.1);
@@ -47,6 +47,9 @@ body{
 #auth h2{font-size:20px;margin:0 0 8px}
 #auth p{color:var(--muted);font-size:14px;margin:0 0 20px;line-height:1.6}
 #auth button{background:var(--blue);color:#fff;border:0;border-radius:14px;padding:13px 22px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;width:100%}
+#reauth{position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:55;display:none}
+#reauth.on{display:block}
+#reauth button{background:var(--blue);color:#fff;border:0;border-radius:999px;padding:9px 18px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;box-shadow:0 4px 14px rgba(0,122,255,.35)}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 /* ===== iOS navigation bar ===== */
@@ -193,7 +196,7 @@ textarea.in{resize:vertical}
 
 <div class="navbar">
   <div class="navrow">
-    <div class="nav-title">مهام عمر</div>
+    <div class="nav-title">Injaz</div>
     <button class="add-top" id="fab" aria-label="إضافة مهمة"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
   </div>
 </div>
@@ -235,9 +238,10 @@ textarea.in{resize:vertical}
 </nav>
 
 <div class="overlay" id="ov"></div>
+<div id="reauth"><button id="reauth-btn">اضغط للمزامنة</button></div>
 <div id="auth"><div class="acard">
-  <img src="icon-192.png" alt="مهام عمر">
-  <h2>مهام عمر</h2>
+  <img src="icon-192.png" alt="Injaz">
+  <h2>Injaz</h2>
   <p>سجّل الدخول بحساب جوجل بتاعك عشان تشوف مهامك وتتحكم فيها. بياناتك بتفضل في الشيت بتاعك بس.</p>
   <button id="signin-btn">تسجيل الدخول بحساب Google</button>
 </div></div>
@@ -299,16 +303,18 @@ function gsiReady() {
   });
 }
 
-async function ensureToken() {
+async function ensureToken(interactive) {
   await gsiReady();
   if (!window.google || !google.accounts) throw new Error('تعذر تحميل تسجيل الدخول');
   if (!tokenClient) tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: SCOPES, callback: () => {} });
   return new Promise((res, rej) => {
     tokenClient.callback = r => {
       if (r.error) { rej(Object.assign(new Error('auth'), { auth: true })); return; }
-      gToken = r.access_token; res(gToken);
+      gToken = r.access_token;
+      try { localStorage.setItem('engaz-signed', '1'); } catch (e) {}
+      res(gToken);
     };
-    tokenClient.requestAccessToken({ prompt: gToken ? '' : 'consent' });
+    tokenClient.requestAccessToken({ prompt: interactive ? 'consent' : '' });
   });
 }
 
@@ -320,7 +326,7 @@ async function api(path, opts = {}, retried) {
   });
   if (r.status === 401 && !retried) {
     gToken = null;
-    try { await ensureToken(); } catch (e) { throw Object.assign(new Error('auth'), { auth: true }); }
+    try { await ensureToken(false); } catch (e) { throw Object.assign(new Error('auth'), { auth: true }); }
     return api(path, opts, true);
   }
   if (!r.ok) throw new Error('Google error ' + r.status);
@@ -475,14 +481,16 @@ function renderShifts() {
 }
 
 async function refresh() {
-  if (!gToken) { S.loading = false; renderAll(); showAuth(); return; }
+  if (!gToken) { S.loading = false; renderAll(); S.tasks.length || S.shifts.length ? showReauth() : showAuth(); return; }
   try {
     const d = await rpc('getData');
     S.tasks = d.tasks;
     S.shifts = d.shifts;
     S.today = d.today || TODAY;
+    hideAuth(); hideReauth();
+    saveCache();
   } catch (err) {
-    if (err && err.auth) { S.loading = false; renderAll(); showAuth(); return; }
+    if (err && err.auth) { S.loading = false; renderAll(); S.tasks.length || S.shifts.length ? showReauth() : showAuth(); return; }
     toast('تعذر تحميل البيانات: ' + err.message);
   }
   S.loading = false;
@@ -491,6 +499,18 @@ async function refresh() {
 
 function showAuth() { const a = $('#auth'); if (a) a.classList.add('on'); }
 function hideAuth() { const a = $('#auth'); if (a) a.classList.remove('on'); }
+function showReauth() { const a = $('#reauth'); if (a) a.classList.add('on'); }
+function hideReauth() { const a = $('#reauth'); if (a) a.classList.remove('on'); }
+function saveCache() {
+  try { localStorage.setItem('engaz-cache', JSON.stringify({ tasks: S.tasks, shifts: S.shifts, today: S.today, ts: Date.now() })); } catch (e) {}
+}
+function loadCache() {
+  try {
+    const c = JSON.parse(localStorage.getItem('engaz-cache') || 'null');
+    if (c && Array.isArray(c.tasks)) { S.tasks = c.tasks; S.shifts = c.shifts || []; S.today = c.today; return true; }
+  } catch (e) {}
+  return false;
+}
 
 $('#list').addEventListener('click', async e => {
   const b = e.target.closest('[data-act]');
@@ -597,15 +617,32 @@ document.querySelectorAll('.tab').forEach(b => {
 
 $('#signin-btn').addEventListener('click', async e => {
   const b = e.target; b.disabled = true; b.textContent = 'جاري تسجيل الدخول...';
-  try { await ensureToken(); hideAuth(); S.loading = true; renderAll(); await refresh(); }
+  try { await ensureToken(true); hideAuth(); S.loading = true; renderAll(); await refresh(); }
   catch (err) { toast('تعذر تسجيل الدخول'); }
   b.disabled = false; b.textContent = 'تسجيل الدخول بحساب Google';
 });
 
+$('#reauth-btn').addEventListener('click', async e => {
+  const b = e.target; b.disabled = true;
+  try { await ensureToken(false); hideReauth(); S.loading = true; renderAll(); await refresh(); }
+  catch (err) {
+    try { await ensureToken(true); hideReauth(); S.loading = true; renderAll(); await refresh(); }
+    catch (e2) { toast('تعذر تسجيل الدخول'); }
+  }
+  b.disabled = false;
+});
+
 $('#n-cat').innerHTML = opts(CATS, 'شخصي');
 $('#n-prio').innerHTML = opts(PRIOS, 'وسط');
+const hadCache = loadCache();
+S.loading = !hadCache;
 renderAll();
-refresh();
+if (hadCache) { showReauth(); } else { showAuth(); }
+if (localStorage.getItem('engaz-signed')) {
+  ensureToken(false)
+    .then(() => { hideAuth(); hideReauth(); refresh(); })
+    .catch(() => { /* stay on cached view; pill or overlay stays for one-tap sign-in */ });
+}
 if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(() => {}); }
 </script>
 </body>
