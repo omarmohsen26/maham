@@ -309,12 +309,29 @@ async function ensureToken(interactive) {
   if (!tokenClient) tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: SCOPES, callback: () => {} });
   return new Promise((res, rej) => {
     tokenClient.callback = r => {
-      if (r.error) { rej(Object.assign(new Error('auth'), { auth: true })); return; }
+      if (r.error) {
+        // First interactive attempt failed without a forced consent screen (e.g. no active
+        // Google session). Retry once with the consent screen so he can pick his account.
+        if (interactive && !r._retried) {
+          tokenClient.callback = r2 => {
+            if (r2.error) { rej(Object.assign(new Error('auth'), { auth: true })); return; }
+            gToken = r2.access_token;
+            try { localStorage.setItem('engaz-signed', '1'); } catch (e) {}
+            res(gToken);
+          };
+          tokenClient.requestAccessToken({ prompt: 'consent' });
+          return;
+        }
+        rej(Object.assign(new Error('auth'), { auth: true }));
+        return;
+      }
       gToken = r.access_token;
       try { localStorage.setItem('engaz-signed', '1'); } catch (e) {}
       res(gToken);
     };
-    tokenClient.requestAccessToken({ prompt: interactive ? 'consent' : '' });
+    // No forced consent screen: with a live Google session and an existing grant this
+    // completes silently, so the phone-check challenge is not triggered on every login.
+    tokenClient.requestAccessToken({ prompt: '' });
   });
 }
 
