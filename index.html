@@ -824,7 +824,7 @@ if (localStorage.getItem('engaz-signed')) {
     .then(() => { hideAuth(); hideReauth(); refresh(); })
     .catch(() => { /* stay on cached view; pill or overlay stays for one-tap sign-in */ });
 }
-if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(() => {}); }
+(function(){if(!('serviceWorker' in navigator))return;var had=!!navigator.serviceWorker.controller,busy=false;function editing(){var a=document.activeElement;return !!((a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))||document.querySelector('#sheet.on'));}function go(){try{sessionStorage.setItem('sw-updated','1');}catch(e){}location.reload();}navigator.serviceWorker.addEventListener('controllerchange',function(){if(!had){had=true;return;}if(busy)return;if(!editing()){go();return;}busy=true;var t=setInterval(function(){if(!editing()){clearInterval(t);go();}},1000);});navigator.serviceWorker.register('sw.js').then(function(r){function up(){try{r.update();}catch(e){}}up();setInterval(up,600000);document.addEventListener('visibilitychange',function(){if(!document.hidden)up();});}).catch(function(){});try{if(sessionStorage.getItem('sw-updated')){sessionStorage.removeItem('sw-updated');setTimeout(function(){if(typeof toast==='function')toast('اتحدّث لآخر نسخة ✅');},600);}}catch(e){}})();
 </script>
 </body>
 </html>
